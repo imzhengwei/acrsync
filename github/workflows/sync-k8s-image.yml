@@ -1,0 +1,61 @@
+name: Sync k8s.gcr.io Images to Aliyun ACR
+
+on:
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      image-name:
+        description: 'Image name from k8s.gcr.io (e.g. "pause")'
+        required: true
+      image-tag:
+        description: 'Image tag (e.g. "3.10")'
+        required: true
+      ali-repo:
+        description: 'Aliyun ACR repository path (e.g. "k8s-images/pause")'
+        required: true
+  schedule:
+    # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 11 点)
+    - cron: '0 3 * * *'
+
+jobs:
+  sync-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure parameters
+        id: config
+        run: |
+          # 使用手动输入参数或设置默认值
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "SOURCE_IMAGE=k8s.gcr.io/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
+            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ github.event.inputs.ali-repo }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
+          else
+            # 设置自动同步时的默认镜像
+            echo "SOURCE_IMAGE=k8s.gcr.io/pause:3.10" >> $GITHUB_ENV
+            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/k8s-images/pause:3.10" >> $GITHUB_ENV
+          fi
+          echo "Source image: $SOURCE_IMAGE"
+          echo "Target image: $TARGET_IMAGE"
+          
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Pull image from k8s.gcr.io
+        run: |
+          docker pull $SOURCE_IMAGE
+
+      - name: Retag image for Aliyun ACR
+        run: |
+          docker tag $SOURCE_IMAGE $TARGET_IMAGE
+
+      - name: Push image to Aliyun ACR
+        run: |
+          docker push $TARGET_IMAGE
+          echo "Successfully pushed: $TARGET_IMAGE"
+
+      - name: Cleanup
+        run: |
+          docker rmi $SOURCE_IMAGE
+          docker rmi $TARGET_IMAGE
