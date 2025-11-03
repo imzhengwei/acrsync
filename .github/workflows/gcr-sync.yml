@@ -30,7 +30,7 @@ jobs:
           else
             # 设置自动同步时的默认镜像
             echo "SOURCE_IMAGE=k8s.gcr.io/pause:3.10" >> $GITHUB_ENV
-            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/k8s-images/pause:3.10" >> $GITHUB_ENV
+            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/zhengweiacr/pause:3.10" >> $GITHUB_ENV
           fi
           echo "Source image: $SOURCE_IMAGE"
           echo "Target image: $TARGET_IMAGE"
