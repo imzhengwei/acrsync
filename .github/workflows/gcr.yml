@@ -10,7 +10,7 @@ on:
         description: 'Image tag (e.g. "3.10")'
         required: true
       ali-repo:
-        description: 'Aliyun ACR repository path (e.g. "k8s-images/pause")'
+        description: 'Aliyun ACR repository path (e.g. "zhenweiacr/pause")'
         required: true
   schedule:
     # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 11 点)
