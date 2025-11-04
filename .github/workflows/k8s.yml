@@ -12,7 +12,7 @@ on:
         description: 'Image tag (e.g. "3.10")'
         required: true
       ali-repo:
-        description: 'Aliyun ACR repository path (e.g. "zhenweiacr/pause")'
+        description: 'Aliyun ACR repository path (e.g. "kubeacr/pause")'
         required: true
   schedule:
     # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 10 点)
@@ -27,6 +27,7 @@ jobs:
         run: |
           # 使用手动输入参数或设置默认值
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # registry.k8s.io/pause:3.10
             echo "SOURCE_IMAGE=${{ github.event.inputs.image-url }}/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
             echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ github.event.inputs.ali-repo }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
           else
@@ -44,7 +45,7 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           password: ${{ secrets.ALIYUN_PASSWORD }}
 
-      - name: Pull image from k8s.gcr.io
+      - name: Pull image from registry.k8s.io
         run: |
           docker pull $SOURCE_IMAGE
 
