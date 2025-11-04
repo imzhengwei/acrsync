@@ -1,10 +1,12 @@
-name: Sync k8s.gcr.io Images to Aliyun ACR
+name: Sync registry.k8s.io Images to Aliyun ACR
 
 on:
   workflow_dispatch:  # 允许手动触发
     inputs:
+      image-url:
+        description: 'Input image url (e.g. "registry.k8s.io")'
       image-name:
-        description: 'Image name from k8s.gcr.io (e.g. "pause")'
+        description: 'Image name from registry.k8s.io (e.g. "pause")'
         required: true
       image-tag:
         description: 'Image tag (e.g. "3.10")'
@@ -13,8 +15,8 @@ on:
         description: 'Aliyun ACR repository path (e.g. "zhenweiacr/pause")'
         required: true
   schedule:
-    # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 11 点)
-    - cron: '0 3 * * *'
+    # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 10 点)
+    - cron: '0 2 * * *'
 
 jobs:
   sync-image:
@@ -25,11 +27,11 @@ jobs:
         run: |
           # 使用手动输入参数或设置默认值
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "SOURCE_IMAGE=k8s.gcr.io/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
+            echo "SOURCE_IMAGE=${{ github.event.inputs.image-url }}/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
             echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ github.event.inputs.ali-repo }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
           else
             # 设置自动同步时的默认镜像
-            echo "SOURCE_IMAGE=k8s.gcr.io/pause:3.10" >> $GITHUB_ENV
+            echo "SOURCE_IMAGE=registry.k8s.io/pause:3.10" >> $GITHUB_ENV
             echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/zhengweiacr/pause:3.10" >> $GITHUB_ENV
           fi
           echo "Source image: $SOURCE_IMAGE"
