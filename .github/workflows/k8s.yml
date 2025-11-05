@@ -32,8 +32,8 @@ jobs:
             echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ github.event.inputs.ali-repo }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
           else
             # 设置自动同步时的默认镜像
-            echo "SOURCE_IMAGE=registry.k8s.io/pause:3.10" >> $GITHUB_ENV
-            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/zhengweiacr/pause:3.10" >> $GITHUB_ENV
+            echo "SOURCE_IMAGE=${{ github.event.inputs.image-name }}/coredns/coredns:v1.10.1" >> $GITHUB_ENV
+            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/kubeacr/coredns:v1.10.1" >> $GITHUB_ENV
           fi
           echo "Source image: $SOURCE_IMAGE"
           echo "Target image: $TARGET_IMAGE"
