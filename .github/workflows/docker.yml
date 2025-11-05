@@ -1,0 +1,47 @@
+name: Sync docker.io Images to Aliyun ACR
+
+on:
+  schedule:
+    # 每天 UTC 时间凌晨 2 点自动同步 (北京时间 10 点)
+    - cron: '0 2 * * *'
+
+jobs:
+  sync-image:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        images:
+          - {source: 'docker.io/librarydebian',tag: 'bookworm',repo: 'acrnamespaces/debian'}
+          - {source: 'docker.io/rockylinux/rockylinux',tag: '10-minimal',repo: 'acrnamespaces/rockylinux'}
+
+    steps:
+      - name: Configure parameters
+        run: |
+          echo "SOURCE_IMAGE=${{ matrix.images.source }}:${{ matrix.images.tag }}" >> $GITHUB_ENV
+          echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ matrix.images.repo }}:${{ matrix.images.tag }}" >> $GITHUB_ENV
+
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Pull image from docker.io
+        run: |
+          docker pull $SOURCE_IMAGE
+
+      - name: Retag image for Aliyun ACR
+        run: |
+          docker tag $SOURCE_IMAGE $TARGET_IMAGE
+
+      - name: Push image to Aliyun ACR
+        run: |
+          docker push $TARGET_IMAGE
+          echo "Successfully pushed: $TARGET_IMAGE"
+
+      - name: Cleanup
+        run: |
+          docker rmi $SOURCE_IMAGE
+          docker rmi $TARGET_IMAGE
