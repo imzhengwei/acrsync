@@ -1,6 +1,7 @@
 name: Sync docker.io Images to Aliyun ACR
 
 on:
+  workflow_dispatch:
   schedule:
     # 每天 UTC 时间凌晨 2 点自动同步 (北京时间 10 点)
     - cron: '0 2 * * *'
