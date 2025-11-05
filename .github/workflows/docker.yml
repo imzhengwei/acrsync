@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - src: 'docker.io/library/debian'
+          - src: 'debian'
             tag: 'bookworm' 
             dest: 'acrnamespaces/debian'
-          - src: 'docker.io/rockylinux/rockylinux' 
+          - src: 'rockylinux/rockylinux' 
             tag: '10-minimal'
             dest: 'acrnamespaces/rockylinux'
 
