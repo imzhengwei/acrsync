@@ -1,33 +1,42 @@
 name: Sync docker.io Images to Aliyun ACR
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # 手动触发
   schedule:
     # 每天 UTC 时间凌晨 2 点自动同步 (北京时间 10 点)
     - cron: '0 2 * * *'
 
 jobs:
-  sync-image:
+  sync-images:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        images:
-          - {source: 'docker.io/librarydebian',tag: 'bookworm',repo: 'acrnamespaces/debian'}
-          - {source: 'docker.io/rockylinux/rockylinux',tag: '10-minimal',repo: 'acrnamespaces/rockylinux'}
+        include:
+          - src: 'docker.io/librarydebian'
+            tag: 'bookworm' 
+            dest: 'acrnamespaces/debian'
+          - src: 'docker.io/rockylinux/rockylinux' 
+            tag: '10-minimal'
+            dest: 'acrnamespaces/rockylinux'
 
     steps:
       - name: Configure parameters
         run: |
-          echo "SOURCE_IMAGE=${{ matrix.images.source }}:${{ matrix.images.tag }}" >> $GITHUB_ENV
-          echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ matrix.images.repo }}:${{ matrix.images.tag }}" >> $GITHUB_ENV
+          echo "SOURCE_IMAGE=${{ matrix.src }}:${{ matrix.tag }}" >> $GITHUB_ENV
+          echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ matrix.dest }}:${{ matrix.tag }}" >> $GITHUB_ENV
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }} 
 
       - name: Login to Aliyun Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ALIYUN_REGISTRY }}
           username: ${{ secrets.ALIYUN_USERNAME }}
-          password: ${{ secrets.ALIYUN_PASSWORD }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}    
 
       - name: Pull image from docker.io
         run: |
