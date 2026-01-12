@@ -29,7 +29,7 @@ jobs:
         run: |
           # 使用手动输入参数或设置默认值
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "SOURCE_IMAGE=docker.io/${{ github.event.inputs.image-namespace }}/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
+            echo "SOURCE_IMAGE=${{ github.event.inputs.image-url }}/${{ github.event.inputs.image-namespace }}/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
             echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ github.event.inputs.ali-repo }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
           else
             # 设置自动同步时的默认镜像
