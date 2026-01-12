@@ -4,7 +4,7 @@ on:
   workflow_dispatch:  # 允许手动触发
     inputs:
       image-url:
-        description: 'url default : docker.io'
+        description: 'url default (e.g. docker.io)'
       image-namespace:
         description: 'Image namespace (e.g. "library")'
       image-name:
@@ -14,7 +14,7 @@ on:
         description: 'Image tag (e.g. "3.10")'
         required: true
       ali-repo:
-        description: 'Aliyun ACR repository path (e.g. "kubeacr/pause")'
+        description: 'Aliyun ACR repository path (e.g. "acrnamespaces/pause")'
         required: true
   #schedule:
     # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 10 点)
