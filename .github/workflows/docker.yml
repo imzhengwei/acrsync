@@ -1,42 +1,50 @@
 name: Sync docker.io Images to Aliyun ACR
 
 on:
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      image-url:
+        description: 'url default : docker.io'
+      image-namespace:
+        description: 'Image namespace (e.g. "library")'
+      image-name:
+        description: 'Image name from registry.k8s.io (e.g. "pause")'
+        required: true
+      image-tag:
+        description: 'Image tag (e.g. "3.10")'
+        required: true
+      ali-repo:
+        description: 'Aliyun ACR repository path (e.g. "kubeacr/pause")'
+        required: true
   #schedule:
-    # 每天 UTC 时间凌晨 2 点自动同步 (北京时间 10 点)
-    #- cron: '0 2 * * *'
+    # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 10 点)
+   #- cron: '0 2 * * *'
 
 jobs:
-  sync-images:
+  sync-image:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - src: 'debian'
-            tag: 'bookworm' 
-            dest: 'acrnamespaces/debian'
-          - src: 'rockylinux/rockylinux' 
-            tag: '10-minimal'
-            dest: 'acrnamespaces/rockylinux'
-
     steps:
       - name: Configure parameters
+        id: config
         run: |
-          echo "SOURCE_IMAGE=${{ matrix.src }}:${{ matrix.tag }}" >> $GITHUB_ENV
-          echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ matrix.dest }}:${{ matrix.tag }}" >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }} 
-
+          # 使用手动输入参数或设置默认值
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "SOURCE_IMAGE=docker.io/${{ github.event.inputs.image-namespace }}/${{ github.event.inputs.image-name }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
+            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ github.event.inputs.ali-repo }}:${{ github.event.inputs.image-tag }}" >> $GITHUB_ENV
+          else
+            # 设置自动同步时的默认镜像
+            echo "SOURCE_IMAGE=${{ github.event.inputs.image-name }}/coredns/coredns:v1.10.1" >> $GITHUB_ENV
+            echo "TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY }}/kubeacr/coredns:v1.10.1" >> $GITHUB_ENV
+          fi
+          echo "Source image: $SOURCE_IMAGE"
+          echo "Target image: $TARGET_IMAGE"
+          
       - name: Login to Aliyun Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ALIYUN_REGISTRY }}
           username: ${{ secrets.ALIYUN_USERNAME }}
-          password: ${{ secrets.ALIYUN_PASSWORD }}    
+          password: ${{ secrets.ALIYUN_PASSWORD }}
 
       - name: Pull image from docker.io
         run: |
