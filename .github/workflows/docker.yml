@@ -39,7 +39,7 @@ jobs:
           echo "Source image: $SOURCE_IMAGE"
           echo "Target image: $TARGET_IMAGE"
 
-      - name: Login to Aliyun Container Registry
+      - name: Login to docker Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.DOCKERHUB_REGISTRY }}
