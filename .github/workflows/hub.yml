@@ -4,9 +4,9 @@ on:
   workflow_dispatch:  # 允许手动触发
     inputs:
       image-url:
-        description: 'url default (e.g. "docker.io or ghcr.io")'
+        description: 'url default (e.g. "docker.io")'
       image-namespace:
-        description: 'Image namespace (e.g. "acrnamespaces or imageai")'
+        description: 'Image namespace (e.g. "hubacr")'
       image-name:
         description: 'Image name from (e.g. "debian")'
         required: true
@@ -14,7 +14,7 @@ on:
         description: 'Image tag (e.g. "bookworm")'
         required: true
       ali-repo:
-        description: 'Aliyun ACR repository path (e.g. "acrnamespaces/debian")'
+        description: 'Aliyun ACR repository path (e.g. "hubacr/debian")'
         required: true
   #schedule:
     # 每天 UTC 时间凌晨 3 点自动同步 (北京时间 10 点)
