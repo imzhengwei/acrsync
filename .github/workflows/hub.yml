@@ -6,7 +6,7 @@ on:
       image-url:
         description: 'url default (e.g. "docker.io")'
       image-namespace:
-        description: 'Image namespace (e.g. "hubacr")'
+        description: 'Image namespace (e.g. "library")'
       image-name:
         description: 'Image name from (e.g. "debian")'
         required: true
